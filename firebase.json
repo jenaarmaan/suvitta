@@ -1,0 +1,16 @@
+
+{
+  "hosting": {
+    "headers": [
+      {
+        "source": "**/*.@(js|css|woff2|svg|jpg|png|webp|avif)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=31536000,immutable"
+          }
+        ]
+      }
+    ]
+  }
+}
