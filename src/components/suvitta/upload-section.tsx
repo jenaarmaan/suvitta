@@ -1,50 +1,22 @@
 'use client';
 
-import { useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import { useState } from 'react';
 import { UploadCloud, LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 
 interface UploadSectionProps {
   onFileChange: (file: File[] | null) => void;
   isParsing: boolean;
 }
 
-const ACCEPTED_FILE_TYPES = {
-  'application/pdf': ['.pdf'],
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-  'image/jpeg': ['.jpeg', '.jpg'],
-  'image/png': ['.png'],
-};
-
-
 export default function UploadSection({ onFileChange, isParsing }: UploadSectionProps) {
-  const { toast } = useToast();
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      onFileChange(Array.from(event.target.files));
+    }
+  };
   
-  const onDrop = useCallback(
-    (acceptedFiles: File[], fileRejections: any[]) => {
-       if (fileRejections.length > 0) {
-        toast({
-          variant: 'destructive',
-          title: 'Invalid File Type',
-          description: 'Please upload a supported document (PDF, DOCX, JPG, PNG).',
-        });
-        return;
-      }
-      if (acceptedFiles.length > 0) {
-        onFileChange(acceptedFiles);
-      }
-    },
-    [onFileChange, toast]
-  );
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: ACCEPTED_FILE_TYPES,
-    multiple: false,
-  });
-
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] text-center px-4">
       <div className="max-w-2xl">
@@ -56,12 +28,9 @@ export default function UploadSection({ onFileChange, isParsing }: UploadSection
         </p>
       </div>
       <div
-        {...getRootProps()}
-        className={`mt-10 w-full max-w-lg cursor-pointer rounded-xl border-2 border-dashed border-primary/20 bg-card p-8 text-center transition-colors duration-300 ${
-          isDragActive ? 'bg-primary/5' : ''
-        }`}
+        className={`mt-10 w-full max-w-lg cursor-pointer rounded-xl border-2 border-dashed border-primary/20 bg-card p-8 text-center transition-colors duration-300`}
       >
-        <input {...getInputProps()} />
+        <input type="file" id="file-upload" className="hidden" onChange={handleFileSelect} accept="application/pdf,image/png,image/jpeg,.docx" />
         <div className="flex flex-col items-center justify-center space-y-4">
           {isParsing ? (
             <>
@@ -80,7 +49,8 @@ export default function UploadSection({ onFileChange, isParsing }: UploadSection
               <Button
                 variant="default"
                 className="bg-primary hover:bg-primary/90"
-                aria-label="Upload a document"
+                onClick={() => document.getElementById('file-upload')?.click()}
+                aria-label="Upload a document by browsing files"
               >
                 Browse Files
               </Button>
@@ -88,9 +58,6 @@ export default function UploadSection({ onFileChange, isParsing }: UploadSection
           )}
         </div>
       </div>
-      <p className="mt-4 text-sm text-muted-foreground">
-        PDF, DOCX, JPG, PNG supported.
-      </p>
       <p className="mt-4 text-sm text-muted-foreground">
         Your documents are secure and never stored after analysis.
       </p>
