@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -25,10 +24,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Copy, LoaderCircle, Languages, FileText, MessageSquareQuote, Code } from 'lucide-react';
+import { CheckCircle, XCircle, Copy, LoaderCircle, Languages, FileText, MessageSquareQuote } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface ResultCardProps {
+interface FinSolveResultCardProps {
   answer: GenerateAnswerOutput;
 }
 
@@ -38,18 +37,18 @@ type TranslatedContent = {
   clauseQuote: string;
 };
 
-export default function ResultCard({ answer }: ResultCardProps) {
+export default function ResultCard({ answer }: FinSolveResultCardProps) {
   const { toast } = useToast();
   const [isTranslating, startTranslation] = useTransition();
   const [translatedContent, setTranslatedContent] =
     useState<TranslatedContent | null>(null);
 
-  const isCovered = answer.decision.toLowerCase().includes('covered') && !answer.decision.toLowerCase().includes('not covered');
+  const isCovered = answer.decision.toLowerCase().includes('covered');
 
-  const copyToClipboard = (text: string, subject: string = 'text') => {
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: `Copied ${subject} to clipboard!`,
+      title: 'Copied to clipboard!',
     });
   };
 
@@ -109,10 +108,10 @@ export default function ResultCard({ answer }: ResultCardProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="en">English</SelectItem>
+                <SelectItem value="hi">Hindi</SelectItem>
+                <SelectItem value="ta">Tamil</SelectItem>
                 <SelectItem value="es">Spanish</SelectItem>
                 <SelectItem value="fr">French</SelectItem>
-                <SelectItem value="de">German</SelectItem>
-                <SelectItem value="ja">Japanese</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -123,14 +122,6 @@ export default function ResultCard({ answer }: ResultCardProps) {
           <h3 className="font-semibold text-lg mb-2">Quick Summary</h3>
           <p className="text-muted-foreground">{content.summary}</p>
         </div>
-
-        {answer.amount && (
-            <div className="p-4 bg-accent/10 rounded-md">
-                <h3 className="font-semibold text-lg mb-1 text-accent-foreground">Coverage Amount</h3>
-                <p className="text-2xl font-bold text-accent">${answer.amount.toLocaleString()}</p>
-            </div>
-        )}
-
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="explanation">
             <AccordionTrigger className="text-lg">
@@ -155,30 +146,9 @@ export default function ResultCard({ answer }: ResultCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => copyToClipboard(content.clauseQuote, 'Clause')}
-                aria-label="Copy clause to clipboard"
+                onClick={() => copyToClipboard(content.clauseQuote)}
               >
                 <Copy className="mr-2 h-4 w-4" /> Copy Clause
-              </Button>
-            </AccordionContent>
-          </AccordionItem>
-           <AccordionItem value="json">
-            <AccordionTrigger className="text-lg">
-                <div className="flex items-center gap-2">
-                    <Code className="h-5 w-5"/> Raw JSON Response
-                </div>
-            </AccordionTrigger>
-            <AccordionContent className="space-y-3">
-                <pre className="text-xs bg-muted/50 p-4 rounded-md overflow-x-auto">
-                    {JSON.stringify(answer, null, 2)}
-                </pre>
-                 <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => copyToClipboard(JSON.stringify(answer, null, 2), 'JSON')}
-                    aria-label="Copy JSON to clipboard"
-                 >
-                    <Copy className="mr-2 h-4 w-4" /> Copy JSON
               </Button>
             </AccordionContent>
           </AccordionItem>

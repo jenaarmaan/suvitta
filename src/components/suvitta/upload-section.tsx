@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCallback } from 'react';
@@ -43,17 +42,17 @@ export default function UploadSection({ onFileChange, isParsing }: UploadSection
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: ACCEPTED_FILE_TYPES,
-    multiple: false, // For now, we process one file at a time, but UI can accept more
+    multiple: false,
   });
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] text-center px-4">
       <div className="max-w-2xl">
         <h1 className="font-headline text-4xl md:text-6xl font-bold text-primary tracking-tight">
-          Understand Your Health Insurance Policy Instantly
+          Understand Your Financial Documents Instantly
         </h1>
         <p className="mt-4 text-lg md:text-xl text-muted-foreground">
-          Upload your health insurance policy, ask anything in plain English.
+          Upload any policy, ask anything in plain English. FinSolve AI provides instant, clause-backed answers you can trust.
         </p>
       </div>
       <div
@@ -61,8 +60,6 @@ export default function UploadSection({ onFileChange, isParsing }: UploadSection
         className={`mt-10 w-full max-w-lg cursor-pointer rounded-xl border-2 border-dashed border-primary/20 bg-card p-8 text-center transition-colors duration-300 ${
           isDragActive ? 'bg-primary/5' : ''
         }`}
-        role="button"
-        aria-label="Document Upload Zone"
       >
         <input {...getInputProps()} />
         <div className="flex flex-col items-center justify-center space-y-4">
@@ -83,7 +80,7 @@ export default function UploadSection({ onFileChange, isParsing }: UploadSection
               <Button
                 variant="default"
                 className="bg-primary hover:bg-primary/90"
-                aria-label="Upload documents"
+                aria-label="Upload a document"
               >
                 Browse Files
               </Button>
@@ -91,7 +88,7 @@ export default function UploadSection({ onFileChange, isParsing }: UploadSection
           )}
         </div>
       </div>
-       <p className="mt-4 text-sm text-muted-foreground">
+      <p className="mt-4 text-sm text-muted-foreground">
         PDF, DOCX, JPG, PNG supported.
       </p>
       <p className="mt-4 text-sm text-muted-foreground">
