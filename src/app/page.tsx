@@ -7,7 +7,6 @@ import { readFileAsDataURI } from '@/lib/file-helpers';
 import type { GenerateAnswerOutput } from '@/ai/flows/generate-answer';
 import { generateAnswer } from '@/ai/flows/generate-answer';
 import { suggestQueries } from '@/ai/flows/suggest-queries';
-import UploadSection from '@/components/suvitta/upload-section';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -15,8 +14,9 @@ import { Send, Sparkles, LoaderCircle, Mic, MicOff, File as FileIcon } from 'luc
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 
-const SuggestedQueries = dynamic(() => import('@/components/suvitta/suggested-queries'));
-const ResultCard = dynamic(() => import('@/components/suvitta/result-card'));
+const UploadSection = dynamic(() => import('@/components/finsolve/upload-section'));
+const SuggestedQueries = dynamic(() => import('@/components/finsolve/suggested-queries'));
+const ResultCard = dynamic(() => import('@/components/finsolve/result-card'));
 
 
 // SpeechRecognition might not be available on the window object, so we declare it
@@ -120,7 +120,6 @@ export default function Home() {
           description: `"${selectedFile.name}" has been loaded. You can now ask questions.`,
         });
 
-        // Generate suggestions based on a generic context since we haven't parsed the file yet
         const dummyTextForSuggestions = `This document outlines the terms and conditions for health insurance coverage. It includes details on covered procedures, such as knee surgery, and exclusions. Pre-existing conditions are covered after a waiting period of 24 months. Emergency hospitalization is covered from day one. For claims, policyholders must notify the company within 48 hours of admission.`;
 
         startSuggestionTransition(async () => {
