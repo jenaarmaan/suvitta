@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { UploadCloud, LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -30,7 +29,7 @@ export default function UploadSection({ onFileChange, isParsing }: UploadSection
       <div
         className={`mt-10 w-full max-w-lg cursor-pointer rounded-xl border-2 border-dashed border-primary/20 bg-card p-8 text-center transition-colors duration-300`}
       >
-        <input type="file" id="file-upload" className="hidden" onChange={handleFileSelect} accept="application/pdf,image/png,image/jpeg,.docx" />
+        <input type="file" id="file-upload" className="hidden" onChange={handleFileSelect} accept="application/pdf,image/png,image/jpeg,.docx,.doc" />
         <div className="flex flex-col items-center justify-center space-y-4">
           {isParsing ? (
             <>

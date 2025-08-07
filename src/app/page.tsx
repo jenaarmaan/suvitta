@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useTransition, useEffect, useRef } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { readFileAsDataURI } from '@/lib/file-helpers';
 import type { GenerateAnswerOutput } from '@/ai/flows/generate-answer';
 import { generateAnswer } from '@/ai/flows/generate-answer';
@@ -13,13 +12,11 @@ import { Send, Sparkles, LoaderCircle, Mic, MicOff, File as FileIcon } from 'luc
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 
-// Dynamically import heavy components to code-split and reduce initial load.
 const UploadSection = dynamic(() => import('@/components/suvitta/upload-section'));
 const SuggestedQueries = dynamic(() => import('@/components/suvitta/suggested-queries'));
 const ResultCard = dynamic(() => import('@/components/suvitta/result-card'));
 
 
-// SpeechRecognition might not be available on the window object, so we declare it
 declare global {
   interface Window {
     SpeechRecognition: any;
@@ -28,7 +25,6 @@ declare global {
 }
 
 export default function Home() {
-  const { toast } = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [suggestedQueriesList, setSuggestedQueriesList] = useState<string[]>([]);
   const [answer, setAnswer] = useState<GenerateAnswerOutput | null>(null);
@@ -61,11 +57,7 @@ export default function Home() {
 
       recognitionRef.current.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
-        toast({
-            variant: 'destructive',
-            title: 'Voice Input Error',
-            description: `An error occurred: ${event.error}. Please try again.`
-        });
+        setError(`Speech recognition error: ${event.error}. Please try again.`);
         setIsListening(false);
       };
       
@@ -73,15 +65,11 @@ export default function Home() {
         setIsListening(false);
       };
     }
-  }, [toast]);
+  }, []);
   
   const handleVoiceInput = () => {
     if (!recognitionRef.current) {
-         toast({
-            variant: 'destructive',
-            title: 'Voice Input Not Supported',
-            description: 'Your browser does not support voice recognition.'
-        });
+        setError('Your browser does not support voice recognition.');
         return;
     }
     
@@ -95,11 +83,7 @@ export default function Home() {
           setIsListening(true);
         })
         .catch(err => {
-            toast({
-                variant: 'destructive',
-                title: 'Microphone Access Denied',
-                description: 'Please enable microphone permissions in your browser settings.'
-            });
+            setError('Please enable microphone permissions in your browser settings.');
         });
     }
   };
@@ -115,11 +99,7 @@ export default function Home() {
     
     startParsingTransition(async () => {
       try {
-        toast({
-          title: 'File Ready',
-          description: `"${selectedFile.name}" has been loaded. You can now ask questions.`,
-        });
-
+        setError(null);
         const dummyTextForSuggestions = `This document outlines the terms and conditions for health insurance coverage. It includes details on covered procedures, such as knee surgery, and exclusions. Pre-existing conditions are covered after a waiting period of 24 months. Emergency hospitalization is covered from day one. For claims, policyholders must notify the company within 48 hours of admission.`;
 
         startSuggestionTransition(async () => {
@@ -134,11 +114,7 @@ export default function Home() {
         setIsReadyForQuery(true);
       } catch (e) {
         const error = e instanceof Error ? e.message : 'An unknown error occurred';
-        toast({
-          variant: 'destructive',
-          title: 'Error processing file',
-          description: error,
-        });
+        setError(`Error processing file: ${error}`);
         resetState();
       }
     });
@@ -165,11 +141,6 @@ export default function Home() {
         setError(
           `Failed to generate an answer. The AI model may be temporarily unavailable or the document could not be read. Please try again later. Details: ${errorMessage}`
         );
-         toast({
-          variant: 'destructive',
-          title: 'Analysis Failed',
-          description: `Failed to get an answer. ${errorMessage}`,
-        });
       }
     });
   };
@@ -304,7 +275,7 @@ export default function Home() {
       </div>
     </div>
      <div className="md:hidden sticky bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-4 z-10">
-        <Button className="w-full" size="lg" onClick={() => document.querySelector('textarea')?.focus()}>
+        <Button className="w-full" size="lg" onClick={() => document.querySelector('textarea')?.focus()} aria-label="Ask a question using voice">
           <Mic className="mr-2" /> Ask a Question
         </Button>
       </div>

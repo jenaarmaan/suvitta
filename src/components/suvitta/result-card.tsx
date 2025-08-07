@@ -25,7 +25,6 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, Copy, LoaderCircle, Languages, FileText, MessageSquareQuote } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 
 interface ResultCardProps {
   answer: GenerateAnswerOutput;
@@ -38,17 +37,17 @@ type TranslatedContent = {
 };
 
 export default function ResultCard({ answer }: ResultCardProps) {
-  const { toast } = useToast();
   const [isTranslating, startTranslation] = useTransition();
   const [translatedContent, setTranslatedContent] =
     useState<TranslatedContent | null>(null);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const isCovered = answer.decision.toLowerCase().includes('covered');
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copied to clipboard!',
+    navigator.clipboard.writeText(text).then(() => {
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
     });
   };
 
@@ -70,11 +69,7 @@ export default function ResultCard({ answer }: ResultCardProps) {
           clauseQuote: clauseQuote.translatedText,
         });
       } catch (e) {
-        toast({
-          variant: 'destructive',
-          title: 'Translation Failed',
-          description: 'Could not translate the content.',
-        });
+        console.error('Translation failed', e);
       }
     });
   };
@@ -147,8 +142,9 @@ export default function ResultCard({ answer }: ResultCardProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => copyToClipboard(content.clauseQuote)}
+                aria-label="Copy clause text to clipboard"
               >
-                <Copy className="mr-2 h-4 w-4" /> Copy Clause
+                <Copy className="mr-2 h-4 w-4" /> {copySuccess ? 'Copied!' : 'Copy Clause'}
               </Button>
             </AccordionContent>
           </AccordionItem>
