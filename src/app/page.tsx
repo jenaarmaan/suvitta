@@ -196,7 +196,7 @@ export default function Home() {
     <>
     <div className="container mx-auto px-4 py-8 max-w-6xl">
        <div className="text-center mb-4">
-        <Button variant="outline" onClick={resetState}>Upload Another Document</Button>
+        <Button variant="outline" onClick={resetState} aria-label="Upload a different document">Upload Another Document</Button>
       </div>
        {file && (
         <div className="mb-4">
