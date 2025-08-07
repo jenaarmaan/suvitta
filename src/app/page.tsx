@@ -1,38 +1,23 @@
 'use client';
 
-import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
+import { useState, useTransition, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { readFileAsDataURI } from '@/lib/file-helpers';
 import type { GenerateAnswerOutput } from '@/ai/flows/generate-answer';
 import { generateAnswer } from '@/ai/flows/generate-answer';
 import { suggestQueries } from '@/ai/flows/suggest-queries';
-import { translateAnswer } from '@/ai/flows/translate-answer';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Send, Sparkles, LoaderCircle, Mic, MicOff, File as FileIcon, Lightbulb, CheckCircle, XCircle, Languages, MessageSquareQuote, FileText, Copy } from 'lucide-react';
+import { Send, Sparkles, LoaderCircle, Mic, MicOff, File as FileIcon } from 'lucide-react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { useDropzone } from 'react-dropzone';
-import { UploadCloud } from 'lucide-react';
 
-
-// Dynamically import heavy components
+// Dynamically import heavy components to code-split and reduce initial load.
 const UploadSection = dynamic(() => import('@/components/suvitta/upload-section'));
+const SuggestedQueries = dynamic(() => import('@/components/suvitta/suggested-queries'));
+const ResultCard = dynamic(() => import('@/components/suvitta/result-card'));
+
 
 // SpeechRecognition might not be available on the window object, so we declare it
 declare global {
@@ -41,143 +26,6 @@ declare global {
     webkitSpeechRecognition: any;
   }
 }
-
-// Result Card Component (consolidated)
-type TranslatedContent = {
-  summary: string;
-  explanation: string;
-  clauseQuote: string;
-};
-
-function ResultCard({ answer }: { answer: GenerateAnswerOutput }) {
-  const { toast } = useToast();
-  const [isTranslating, startTranslation] = useTransition();
-  const [translatedContent, setTranslatedContent] = useState<TranslatedContent | null>(null);
-
-  const isCovered = answer.decision.toLowerCase().includes('covered');
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({ title: 'Copied to clipboard!' });
-  };
-
-  const handleLanguageChange = async (lang: string) => {
-    if (lang === 'en') {
-      setTranslatedContent(null);
-      return;
-    }
-    startTranslation(async () => {
-      try {
-        const [summary, explanation, clauseQuote] = await Promise.all([
-          translateAnswer({ text: answer.summary, targetLanguage: lang }),
-          translateAnswer({ text: answer.explanation, targetLanguage: lang }),
-          translateAnswer({ text: answer.clauseQuote, targetLanguage: lang }),
-        ]);
-        setTranslatedContent({
-          summary: summary.translatedText,
-          explanation: explanation.translatedText,
-          clauseQuote: clauseQuote.translatedText,
-        });
-      } catch (e) {
-        toast({
-          variant: 'destructive',
-          title: 'Translation Failed',
-          description: 'Could not translate the content.',
-        });
-      }
-    });
-  };
-
-  const content = {
-    summary: translatedContent?.summary || answer.summary,
-    explanation: translatedContent?.explanation || answer.explanation,
-    clauseQuote: translatedContent?.clauseQuote || answer.clauseQuote,
-  };
-
-  return (
-    <Card className="shadow-2xl shadow-primary/10" role="region" aria-label="Analysis Result">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <CardDescription>AI Decision</CardDescription>
-            <CardTitle className={`font-headline text-3xl flex items-center gap-2 ${isCovered ? 'text-green-600' : 'text-red-600'}`}>
-              {isCovered ? <CheckCircle /> : <XCircle />}
-              {answer.decision}
-            </CardTitle>
-          </div>
-          <div className="w-36">
-            <Select onValueChange={handleLanguageChange} defaultValue="en">
-              <SelectTrigger disabled={isTranslating} aria-label="Select language for translation">
-                {isTranslating ? <LoaderCircle className="animate-spin mr-2" /> : <Languages className="mr-2 h-4 w-4" />}
-                <SelectValue placeholder="Language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="hi">Hindi</SelectItem>
-                <SelectItem value="ta">Tamil</SelectItem>
-                <SelectItem value="es">Spanish</SelectItem>
-                <SelectItem value="fr">French</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <h3 className="font-semibold text-lg mb-2">Quick Summary</h3>
-          <p className="text-muted-foreground">{content.summary}</p>
-        </div>
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="explanation">
-            <AccordionTrigger className="text-lg">
-              <div className="flex items-center gap-2"><MessageSquareQuote className="h-5 w-5"/> Explanation</div>
-            </AccordionTrigger>
-            <AccordionContent className="text-base text-muted-foreground prose prose-sm max-w-none">
-              <p>{content.explanation}</p>
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="clause">
-            <AccordionTrigger className="text-lg">
-              <div className="flex items-center gap-2"><FileText className="h-5 w-5"/> Found in your document</div>
-            </AccordionTrigger>
-            <AccordionContent className="space-y-3">
-              <blockquote className="border-l-4 border-accent pl-4 italic text-muted-foreground">{content.clauseQuote}</blockquote>
-              <Button variant="ghost" size="sm" onClick={() => copyToClipboard(content.clauseQuote)}>
-                <Copy className="mr-2 h-4 w-4" /> Copy Clause
-              </Button>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      </CardContent>
-    </Card>
-  );
-}
-
-// Suggested Queries Component (consolidated)
-function SuggestedQueries({ queries, onQueryClick, isLoading }: { queries: string[]; onQueryClick: (query: string) => void; isLoading: boolean; }) {
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2 font-headline text-primary"><Lightbulb /> Suggested Queries</CardTitle></CardHeader>
-        <CardContent className="space-y-2">{[...Array(3)].map((_, i) => (<Skeleton key={i} className="h-10 w-full" />))}</CardContent>
-      </Card>
-    );
-  }
-  if (queries.length === 0) return null;
-  return (
-    <Card>
-      <CardHeader><CardTitle className="flex items-center gap-2 font-headline text-primary"><Lightbulb /> Suggested Queries</CardTitle></CardHeader>
-      <CardContent className="flex flex-col space-y-2">
-        {queries.map((query, index) => (
-          <Button key={index} variant="outline" className="text-left justify-start h-auto whitespace-normal" onClick={() => onQueryClick(query)}>
-            {query}
-          </Button>
-        ))}
-      </CardContent>
-    </Card>
-  );
-}
-
 
 export default function Home() {
   const { toast } = useToast();

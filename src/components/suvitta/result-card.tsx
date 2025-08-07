@@ -27,7 +27,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, Copy, LoaderCircle, Languages, FileText, MessageSquareQuote } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface FinSolveResultCardProps {
+interface ResultCardProps {
   answer: GenerateAnswerOutput;
 }
 
@@ -37,7 +37,7 @@ type TranslatedContent = {
   clauseQuote: string;
 };
 
-export default function ResultCard({ answer }: FinSolveResultCardProps) {
+export default function ResultCard({ answer }: ResultCardProps) {
   const { toast } = useToast();
   const [isTranslating, startTranslation] = useTransition();
   const [translatedContent, setTranslatedContent] =
