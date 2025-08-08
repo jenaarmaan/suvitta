@@ -1,55 +1,60 @@
-// File: api/hackrx/run.ts
-import { generateAnswer } from '@/ai/flows/generate-answer';
-import { z } from 'zod';
-
-export const config = {
-  runtime: 'edge', // use 'nodejs' if Genkit Edge isn't working
-};
-
-const schema = z.object({
-  documentUrl: z.string().url(),
-  queries: z.array(z.string()),
-});
-
-export default async function handler(req: Request) {
-  if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 });
-  }
-
-  const authHeader = req.headers.get('authorization') || '';
-  if (!authHeader.startsWith('Bearer ') || authHeader.split(' ')[1] !== process.env.HACKRX_TOKEN) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
-  const body = await req.json();
-  const parsed = schema.safeParse(body);
-
-  if (!parsed.success) {
-    return new Response(JSON.stringify(parsed.error), { status: 400 });
-  }
-
-  const { documentUrl, queries } = parsed.data;
-
-  try {
-    const response = await fetch(documentUrl);
-    const buffer = await response.arrayBuffer();
-    const base64 = Buffer.from(buffer).toString('base64');
-    const mimeType = response.headers.get('content-type') || 'application/pdf';
-    const documentDataUri = `data:${mimeType};base64,${base64}`;
-
-    const answers = await Promise.all(
-      queries.map(async (question) => {
-        const result = await generateAnswer({ documentDataUri, question });
-        return { question, ...result };
-      })
-    );
-
-    return new Response(JSON.stringify({ answers }), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 200,
-    });
-  } catch (err) {
-    console.error(err);
-    return new Response('Internal Server Error', { status: 500 });
-  }
+{
+  "name": "nextn",
+  "version": "0.1.0",
+  "private": true,
+  "sideEffects": false,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
+    "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@genkit-ai/googleai": "^1.14.1",
+    "@genkit-ai/next": "^1.14.1",
+    "@radix-ui/react-accordion": "^1.2.3",
+    "@radix-ui/react-avatar": "^1.1.3",
+    "@radix-ui/react-dropdown-menu": "^2.1.6",
+    "@radix-ui/react-select": "^2.1.6",
+    "@radix-ui/react-slot": "^1.2.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dotenv": "^16.5.0",
+    "firebase": "^11.9.1",
+    "formidable": "^3.5.1",
+    "genkit": "^1.14.1",
+    "lucide-react": "^0.475.0",
+    "next": "15.3.3",
+    "patch-package": "^8.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/formidable": "^3.4.5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "genkit-cli": "^1.14.1",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  },
+  "browserslist": [
+    "defaults",
+    "not IE 11"
+  ],
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
