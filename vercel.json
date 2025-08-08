@@ -1,13 +1,10 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "api/hackrx-run.js", "use": "@vercel/node" }
-  ],
   "routes": [
     {
       "src": "/hackrx/run",
       "methods": ["POST"],
-      "dest": "api/hackrx-run.js"
+      "dest": "/api/webhook.js"
     }
   ]
 }
