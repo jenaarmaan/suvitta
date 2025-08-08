@@ -46,5 +46,13 @@
   "browserslist": [
     "defaults",
     "not IE 11"
-  ]
+  ],
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
