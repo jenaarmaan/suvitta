@@ -2,7 +2,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import fs from 'fs';
-import { generateAnswer } from '@/ai/flows/generate-answer';
 
 // Disable Next.js body parsing to allow formidable to handle the stream
 export const config = {
@@ -23,64 +22,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
-
-  // 3. Parse Form Data
-  const form = formidable({});
   
   try {
-    const [fields, files] = await form.parse(req);
+    const response = await fetch("https://api-sigma-orpin.vercel.app/api/webhook", {
+        method: "POST",
+        headers: { 
+            "Content-Type": req.headers['content-type'] || 'application/json',
+            "Authorization": authHeader,
+        },
+        body: req,
+      });
 
-    let documentBuffer: Buffer;
-    let mimeType = 'application/octet-stream'; // Default MIME type
-
-    // 4. Handle Document Input (File vs. URL)
-    if (files.document) {
-      const file = files.document[0];
-      documentBuffer = fs.readFileSync(file.filepath);
-      mimeType = file.mimetype || mimeType;
-    } else if (fields.documentUrl && typeof fields.documentUrl[0] === 'string') {
-      const resp = await fetch(fields.documentUrl[0]);
-      if (!resp.ok) {
-        return res.status(400).json({ error: `Failed to fetch document from URL: ${resp.statusText}` });
+      const data = await response.json();
+      
+      if(!response.ok) {
+          return res.status(response.status).json(data);
       }
-      documentBuffer = Buffer.from(await resp.arrayBuffer());
-      mimeType = resp.headers.get('content-type') || mimeType;
-    } else {
-      return res.status(400).json({ error: 'Request must contain either a "document" file upload or a "documentUrl" field.' });
-    }
-
-    // 5. Handle Questions Input
-    const questionsField = fields.queries;
-    if (!questionsField || !questionsField[0]) {
-      return res.status(400).json({ error: 'Missing "queries" field with a JSON array of questions.' });
-    }
-    
-    let questions: string[];
-    try {
-        // The field is a stringified JSON array
-        questions = JSON.parse(questionsField[0]);
-        if (!Array.isArray(questions) || questions.length === 0) {
-            throw new Error("Queries must be a non-empty array.");
-        }
-    } catch (e) {
-        return res.status(400).json({ error: 'Invalid "queries" field. It must be a non-empty JSON array of strings.' });
-    }
-
-    // 6. Process with Genkit Flow
-    const documentDataUri = `data:${mimeType};base64,${documentBuffer.toString('base64')}`;
-
-    const answers = await Promise.all(
-      questions.map(async (question) => {
-        const result = await generateAnswer({ documentDataUri, question });
-        return { question, ...result };
-      })
-    );
-    
-    // 7. Return Response
-    return res.status(200).json({ answers });
+      
+      return res.status(200).json(data);
 
   } catch (error: any) {
-    console.error('Webhook processing error:', error);
+    console.error('Webhook proxy error:', error);
     return res.status(500).json({ error: 'An internal server error occurred.', details: error.message });
   }
 }
