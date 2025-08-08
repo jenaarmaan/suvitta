@@ -1,5 +1,5 @@
 // src/ai/flows/generate-answer.ts
-'use server';
+
 /**
  * @fileOverview A flow to generate answers from financial documents based on user questions.
  *

@@ -1,5 +1,5 @@
 // src/ai/flows/translate-answer.ts
-'use server';
+
 
 /**
  * @fileOverview Translates the AI's response into the user's selected language.
