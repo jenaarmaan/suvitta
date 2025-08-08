@@ -1,91 +1,114 @@
 
-import { NextRequest, NextResponse } from 'next/server';
-import formidable from 'formidable';
-import fs from 'fs';
-import fetch from 'node-fetch';
-import { generateAnswerFlow } from '../../../../../firebase/genkitLogic.js';
+// src/app/api/hackrx/run/route.ts
+import pdf from 'pdf-parse';
+import { NextResponse } from 'next/server';
 
-// This function handles the POST request
-export async function POST(req: NextRequest) {
-  // 1. Authorization Check
-  const token = process.env.HACKRX_TOKEN || 'hackrx-test-token-2025';
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader || authHeader !== `Bearer ${token}`) {
-    return NextResponse.json({ error: 'Unauthorized: Invalid or missing Bearer token' }, { status: 401 });
+type RequestBody = {
+  documents: string | string[]; // single URL or array
+  questions: string[];
+};
+
+function splitSentences(text: string) {
+  // crude but effective sentence splitter
+  const matches = text.match(/[^\.!\?]+[\.!\?]*/g);
+  if (!matches) return [text];
+  return matches.map(s => s.replace(/\s+/g, ' ').trim()).filter(Boolean);
+}
+
+function simpleBestSentenceMatch(question: string, sentences: string[]) {
+  const qtoks = (question || '')
+    .toLowerCase()
+    .match(/\b[a-z0-9]{3,}\b/g) || [];
+
+  if (!qtoks.length) return { sentence: sentences[0] || '', score: 0 };
+
+  let bestIdx = 0;
+  let bestScore = 0;
+  for (let i = 0; i < sentences.length; i++) {
+    const s = sentences[i].toLowerCase();
+    let score = 0;
+    for (const t of qtoks) {
+      if (s.includes(t)) score++;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestIdx = i;
+    }
   }
+  return { sentence: sentences[bestIdx] || '', score: bestScore };
+}
 
-  // formidable can't process the NextRequest directly, we need the underlying stream
-  // @ts-ignore
-  const form = formidable({ multiples: false });
+function extractAmount(sentence: string) {
+  if (!sentence) return undefined;
+  // look for INR / Rs / ₹ or plain numbers
+  const m = sentence.match(/(?:₹|Rs\.?|INR)?\s*([0-9]{1,3}(?:[,\s][0-9]{3})*(?:\.\d+)?)/i);
+  if (!m) return undefined;
+  const num = m[1].replace(/[,\s]/g, '');
+  const parsed = Number(num);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
 
+export async function POST(req: Request) {
   try {
-    const { fields, files } = await new Promise<{ fields: formidable.Fields; files: formidable.Files }>((resolve, reject) => {
-        form.parse(req as any, (err, fields, files) => {
-            if (err) {
-                reject(err);
-            }
-            resolve({ fields, files });
-        });
+    const authHeader = req.headers.get('authorization') || '';
+    const token = process.env.HACKRX_TOKEN || 'hackrx-test-token-2025';
+
+    if (!authHeader.startsWith('Bearer ') || authHeader.split(' ')[1] !== token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body: RequestBody = await req.json().catch(() => ({} as any));
+    const { documents, questions } = body;
+
+    if (!documents || !questions || !Array.isArray(questions)) {
+      return NextResponse.json({ error: 'Missing documents or questions' }, { status: 400 });
+    }
+
+    // pick first document URL (this endpoint supports 1 doc quickly)
+    const docUrl = Array.isArray(documents) ? documents[0] : documents;
+
+    // fetch document
+    const resp = await fetch(docUrl);
+    if (!resp.ok) {
+      return NextResponse.json({ error: 'Failed to fetch document', status: resp.status }, { status: 400 });
+    }
+
+    const contentType = (resp.headers.get('content-type') || '').toLowerCase();
+    const arr = await resp.arrayBuffer();
+    const buffer = Buffer.from(arr);
+
+    let text = '';
+
+    if (contentType.includes('pdf') || /\.pdf(\?|$)/i.test(docUrl)) {
+      try {
+        const data = await pdf(buffer as Buffer);
+        text = data && (data.text || data.ntext) ? (data.text || data.ntext) : '';
+      } catch (err) {
+        console.error('pdf-parse error', err);
+        text = buffer.toString('utf-8');
+      }
+    } else {
+      // fallback: treat resource as text
+      text = buffer.toString('utf-8');
+    }
+
+    if (!text) text = '';
+
+    const sentences = splitSentences(text);
+    const answers = questions.map((q: string) => {
+      const { sentence, score } = simpleBestSentenceMatch(q, sentences);
+      if (score === 0) {
+        // fallback: return top snippet
+        const snippet = text.slice(0, 500) + (text.length > 500 ? '...' : '');
+        return { question: q, answer: `No exact clause found. Document snippet: ${snippet}`, clauseQuote: '', amount: undefined, decision: "Not Found", summary: "Could not find a relevant clause.", explanation: "The query did not match any specific clauses in the document." };
+      }
+      const amount = extractAmount(sentence);
+      return { question: q, decision: "Found", summary: sentence, explanation: sentence, clauseQuote: sentence, amount: amount ?? undefined };
     });
 
-    let documentBuffer;
-    let documentMimeType = 'application/octet-stream';
-    const file = files.document?.[0];
-    const documentsField = fields.documents?.[0];
-
-    // 3. Handle Document Source (Upload or URL)
-    if (file) {
-      documentBuffer = fs.readFileSync(file.filepath);
-      documentMimeType = file.mimetype || 'application/octet-stream';
-    } else if (documentsField) {
-      const docUrl = documentsField;
-      if (typeof docUrl !== 'string' || !docUrl.startsWith('http')) {
-        return NextResponse.json({ error: 'Invalid document URL provided.' }, { status: 400 });
-      }
-      const response = await fetch(docUrl);
-      if (!response.ok) {
-        return NextResponse.json({ error: `Failed to download document from URL: ${docUrl}` }, { status: 500 });
-      }
-      const arrayBuffer = await response.arrayBuffer();
-      documentBuffer = Buffer.from(arrayBuffer);
-      documentMimeType = response.headers.get('content-type') || 'application/pdf';
-    } else {
-      return NextResponse.json({ error: 'Missing document source. Provide either a file upload named `document` or a `documents` URL.' }, { status: 400 });
-    }
-
-    // 4. Handle Questions
-    const questionsStr = fields.questions?.[0] || '[]';
-    let questions;
-    try {
-      questions = JSON.parse(questionsStr);
-      if (!Array.isArray(questions) || questions.length === 0) {
-        return NextResponse.json({ error: '`questions` must be a non-empty array.' }, { status: 400 });
-      }
-    } catch (e) {
-      return NextResponse.json({ error: 'Invalid JSON in `questions` field.' }, { status: 400 });
-    }
-
-    // 5. Process with Genkit Flow
-    const documentDataUri = `data:${documentMimeType};base64,${documentBuffer.toString('base64')}`;
-    const answers = [];
-
-    for (const question of questions) {
-      const result = await generateAnswerFlow({
-        documentDataUri: documentDataUri,
-        question: question,
-      });
-      answers.push({
-        question: question,
-        ...result
-      });
-    }
-
-    // 6. Return Final Response
     return NextResponse.json({ answers }, { status: 200 });
-
-  } catch (e: unknown) {
-    console.error('Error processing request:', e);
-    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
-    return NextResponse.json({ error: 'Internal Server Error', details: errorMessage }, { status: 500 });
+  } catch (err) {
+    console.error('Webhook handler error:', err);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
