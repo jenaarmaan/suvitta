@@ -22,6 +22,7 @@
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
 
 # debug
@@ -37,9 +38,24 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# genkit
 .genkit/*
-.env*
 
-# firebase
+# environment & API keys
+.env
+.env.local
+.env.*.local
+
+# firebase config (local)
+firebase.json
+firestore.rules
+firestore.indexes.json
+storage.rules
 firebase-debug.log
 firestore-debug.log
+
+# extra: prevent sensitive key leaks in misc configs
+*.key
+*.crt
+*.cert
+*.private
