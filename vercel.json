@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/hackrx/run",
+      "methods": ["POST"],
+      "dest": "/api/webhook.js"
+    }
+  ]
+}
