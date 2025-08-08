@@ -1,4 +1,3 @@
-
 // src/app/api/hackrx/run/route.ts
 import pdf from 'pdf-parse';
 import { NextResponse } from 'next/server';
@@ -100,10 +99,10 @@ export async function POST(req: Request) {
       if (score === 0) {
         // fallback: return top snippet
         const snippet = text.slice(0, 500) + (text.length > 500 ? '...' : '');
-        return { question: q, answer: `No exact clause found. Document snippet: ${snippet}`, clauseQuote: '', amount: undefined, decision: "Not Found", summary: "Could not find a relevant clause.", explanation: "The query did not match any specific clauses in the document." };
+        return { question: q, answer: `No exact clause found. Document snippet: ${snippet}`, clauseQuote: '', amount: undefined };
       }
       const amount = extractAmount(sentence);
-      return { question: q, decision: "Found", summary: sentence, explanation: sentence, clauseQuote: sentence, amount: amount ?? undefined };
+      return { question: q, answer: sentence, clauseQuote: sentence, amount: amount ?? undefined };
     });
 
     return NextResponse.json({ answers }, { status: 200 });
