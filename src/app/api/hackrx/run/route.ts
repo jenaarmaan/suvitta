@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import formidable from 'formidable';
 import fs from 'fs';
 import fetch from 'node-fetch';
-import { generateAnswerFlow } from '../../../../firebase/genkitLogic.js';
+import { generateAnswerFlow } from '../../../../../firebase/genkitLogic.js';
 
 // This function handles the POST request
 export async function POST(req: NextRequest) {
