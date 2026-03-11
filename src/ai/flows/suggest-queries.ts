@@ -1,6 +1,8 @@
 
 
 
+'use server';
+
 /**
  * @fileOverview Suggests relevant questions based on the uploaded document.
  *

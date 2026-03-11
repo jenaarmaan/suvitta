@@ -10,7 +10,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch('http://localhost:8000/api/v1/hackrx/run', {
+    const baseUrl = process.env.BACKEND_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    // Note: Updated path to /api/hackrx/run to match Next.js route in src/app/api/hackrx/run
+    const response = await fetch(`${baseUrl}/api/hackrx/run`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

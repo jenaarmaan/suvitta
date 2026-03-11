@@ -1,3 +1,5 @@
+'use server';
+
 // src/ai/flows/generate-answer.ts
 
 /**
@@ -7,6 +9,8 @@
  * - GenerateAnswerInput - The input type for the generateAnswer function.
  * - GenerateAnswerOutput - The return type for the generateAnswer function.
  */
+
+'use server';
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
