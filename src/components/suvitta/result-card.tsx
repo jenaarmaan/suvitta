@@ -81,27 +81,30 @@ export default function ResultCard({ answer }: ResultCardProps) {
   };
 
   return (
-    <Card className="shadow-2xl shadow-primary/10" role="region" aria-label="Analysis Result">
-      <CardHeader>
-        <div className="flex justify-between items-start">
+    <Card className="glass border-none shadow-2xl rounded-3xl overflow-hidden" role="region" aria-label="Analysis Result">
+      <CardHeader className="bg-primary/5 p-8 border-b border-primary/10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="flex-1">
-            <CardDescription>AI Decision</CardDescription>
+            <div className="flex items-center gap-2 mb-2">
+                <div className={`h-2 w-2 rounded-full ${isCovered ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">AI Decision Core</span>
+            </div>
             <CardTitle
-              className={`font-headline text-3xl flex items-center gap-2 ${
+              className={`font-headline text-5xl md:text-6xl flex items-center gap-4 ${
                 isCovered ? 'text-green-600' : 'text-red-600'
               }`}
             >
-              {isCovered ? <CheckCircle /> : <XCircle />}
+              {isCovered ? <CheckCircle className="h-12 w-12" /> : <XCircle className="h-12 w-12" />}
               {answer.decision}
             </CardTitle>
           </div>
-          <div className="w-36">
+          <div className="flex items-center gap-3 bg-white/50 p-2 rounded-2xl border border-primary/5">
+            <Languages className="h-5 w-5 text-primary ml-2" />
              <Select onValueChange={handleLanguageChange} defaultValue="en">
-              <SelectTrigger disabled={isTranslating} aria-label="Select language for translation">
-                 {isTranslating ? <LoaderCircle className="animate-spin mr-2" /> : <Languages className="mr-2 h-4 w-4" />}
-                <SelectValue placeholder="Language" />
+              <SelectTrigger disabled={isTranslating} className="w-40 bg-transparent border-none focus:ring-0 text-md font-medium">
+                 {isTranslating ? <LoaderCircle className="animate-spin" /> : <SelectValue placeholder="Language" />}
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-2xl">
                 <SelectItem value="en">English</SelectItem>
                 <SelectItem value="hi">Hindi</SelectItem>
                 <SelectItem value="ta">Tamil</SelectItem>
@@ -112,43 +115,79 @@ export default function ResultCard({ answer }: ResultCardProps) {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <h3 className="font-semibold text-lg mb-2">Quick Summary</h3>
-          <p className="text-muted-foreground">{content.summary}</p>
+      <CardContent className="p-8 space-y-8">
+        <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10">
+          <h3 className="text-xs font-bold text-primary uppercase tracking-widest mb-4">Executive Summary</h3>
+          <p className="text-xl md:text-2xl text-foreground font-medium leading-relaxed">{content.summary}</p>
         </div>
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="explanation">
-            <AccordionTrigger className="text-lg">
-                <div className="flex items-center gap-2">
-                    <MessageSquareQuote className="h-5 w-5"/> Explanation
+
+        <Accordion type="single" collapsible className="w-full space-y-4">
+          <AccordionItem value="explanation" className="border border-primary/5 rounded-2xl px-6 bg-white/30 overflow-hidden">
+            <AccordionTrigger className="hover:no-underline py-6">
+                <div className="flex items-center gap-4 text-left">
+                    <div className="p-2 bg-blue-500/10 rounded-lg">
+                        <MessageSquareQuote className="h-6 w-6 text-blue-600"/>
+                    </div>
+                    <div>
+                        <span className="text-lg font-bold block leading-none">Why this decision?</span>
+                        <span className="text-sm text-muted-foreground font-normal">Detailed process reasoning</span>
+                    </div>
                 </div>
             </AccordionTrigger>
-            <AccordionContent className="text-base text-muted-foreground prose prose-sm max-w-none">
-              <p>{content.explanation}</p>
+            <AccordionContent className="text-lg text-muted-foreground leading-relaxed pb-6">
+              <p className="border-t border-primary/5 pt-6">{content.explanation}</p>
             </AccordionContent>
           </AccordionItem>
-          <AccordionItem value="clause">
-            <AccordionTrigger className="text-lg">
-                <div className="flex items-center gap-2">
-                    <FileText className="h-5 w-5"/> Found in your document
+
+          <AccordionItem value="clause" className="border border-primary/5 rounded-2xl px-6 bg-white/30 overflow-hidden">
+            <AccordionTrigger className="hover:no-underline py-6">
+                <div className="flex items-center gap-4 text-left">
+                    <div className="p-2 bg-purple-500/10 rounded-lg">
+                        <FileText className="h-6 w-6 text-purple-600"/>
+                    </div>
+                    <div>
+                        <span className="text-lg font-bold block leading-none">Source Clause</span>
+                        <span className="text-sm text-muted-foreground font-normal">Extracted straight from document</span>
+                    </div>
                 </div>
             </AccordionTrigger>
-            <AccordionContent className="space-y-3">
-              <blockquote className="border-l-4 border-accent pl-4 italic text-muted-foreground">
-                {content.clauseQuote}
-              </blockquote>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => copyToClipboard(content.clauseQuote)}
-                aria-label="Copy clause text to clipboard"
-              >
-                <Copy className="mr-2 h-4 w-4" /> {copySuccess ? 'Copied!' : 'Copy Clause'}
-              </Button>
+            <AccordionContent className="space-y-6 pb-6">
+              <div className="relative group border-t border-primary/5 pt-6">
+                <blockquote className="border-l-4 border-primary/30 pl-6 italic text-xl text-muted-foreground bg-primary/5 py-8 rounded-r-2xl pr-8">
+                    "{content.clauseQuote}"
+                </blockquote>
+                <div className="mt-6 flex justify-end">
+                    <Button
+                        variant="secondary"
+                        size="lg"
+                        className="rounded-xl px-6 py-4 font-semibold hover:bg-primary hover:text-white transition-all gap-2"
+                        onClick={() => copyToClipboard(content.clauseQuote)}
+                    >
+                        {copySuccess ? <CheckCircle className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+                        {copySuccess ? 'Text Copied' : 'Copy Source Clause'}
+                    </Button>
+                </div>
+              </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+
+        {answer.amount && (
+            <div className="mt-8 border-t border-primary/10 pt-8 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="p-3 bg-green-500/10 rounded-full">
+                        <CheckCircle className="h-8 w-8 text-green-600" />
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-2xl text-foreground">Identified Value</h4>
+                        <p className="text-muted-foreground">Detected from context</p>
+                    </div>
+                </div>
+                <div className="text-4xl font-headline font-black text-green-600">
+                    {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(answer.amount)}
+                </div>
+            </div>
+        )}
       </CardContent>
     </Card>
   );

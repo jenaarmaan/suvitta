@@ -38,21 +38,27 @@ export default function SuggestedQueries({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 font-headline text-primary">
-          <Lightbulb /> Suggested Queries
+    <Card className="glass border-none shadow-xl rounded-3xl overflow-hidden">
+      <CardHeader className="p-8 pb-4">
+        <CardTitle className="flex items-center gap-3 font-headline text-2xl font-bold text-foreground">
+          <div className="p-2 bg-yellow-400/20 rounded-lg">
+            <Lightbulb className="h-5 w-5 text-yellow-500 animate-pulse" />
+          </div>
+          Expert Suggestions
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col space-y-2">
+      <CardContent className="p-8 pt-0 flex flex-col space-y-3">
         {queries.map((query, index) => (
           <Button
             key={index}
-            variant="outline"
-            className="text-left justify-start h-auto whitespace-normal"
+            variant="ghost"
+            className="text-left justify-start h-auto whitespace-normal p-4 rounded-2xl bg-white/40 hover:bg-primary/10 border border-primary/5 hover:border-primary/20 transition-all group"
             onClick={() => onQueryClick(query)}
           >
-            {query}
+            <div className="flex gap-3 items-start">
+                <span className="text-primary/40 font-bold group-hover:text-primary transition-colors">0{index + 1}</span>
+                <span className="font-medium text-foreground group-hover:text-primary transition-colors">{query}</span>
+            </div>
           </Button>
         ))}
       </CardContent>

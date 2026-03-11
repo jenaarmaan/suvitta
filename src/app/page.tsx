@@ -164,112 +164,169 @@ export default function Home() {
 
   return (
     <>
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-       <div className="text-center mb-4">
-        <Button variant="outline" onClick={resetState} aria-label="Upload a different document">Upload Another Document</Button>
+    <div className="container mx-auto px-4 py-12 max-w-7xl relative">
+       <div className="flex justify-between items-center mb-12">
+        <div className="flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-primary" />
+            <span className="text-xl font-headline font-bold tracking-tight">SUVITTA AI</span>
+        </div>
+        <Button variant="ghost" onClick={resetState} className="rounded-full px-6 border border-primary/20 hover:bg-primary/5 transition-colors">
+            Analyze New Document
+        </Button>
       </div>
+
        {file && (
-        <div className="mb-4">
-            <h3 className="font-headline text-lg font-semibold text-primary mb-2">Uploaded File:</h3>
-            <div className="flex items-center gap-2 bg-muted p-2 rounded-md max-w-md">
-                <FileIcon className="h-4 w-4 text-muted-foreground"/>
-                <span className="text-sm text-foreground truncate">{file.name}</span>
+        <div className="mb-8 p-4 glass rounded-2xl flex items-center justify-between border-primary/10">
+            <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-xl">
+                    <FileIcon className="h-6 w-6 text-primary"/>
+                </div>
+                <div>
+                    <h3 className="font-semibold text-foreground leading-none mb-1">Active Intelligence</h3>
+                    <p className="text-sm text-muted-foreground truncate max-w-[200px] md:max-w-md">{file.name}</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Document Ready</span>
             </div>
         </div>
        )}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        <div className="space-y-6">
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="font-headline text-2xl font-semibold mb-4 text-primary">
-                Ask a Question
-              </h2>
-              <p className="text-muted-foreground mb-4">
-                Use the space below to ask about your uploaded document.
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        <div className="lg:col-span-4 space-y-8 h-full">
+          <Card className="glass border-none shadow-2xl overflow-hidden rounded-3xl">
+            <CardContent className="p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-accent/20 rounded-lg">
+                    <MessageSquareQuote className="h-5 w-5 text-accent" />
+                </div>
+                <h2 className="font-headline text-2xl font-bold text-foreground">
+                  Quick Query
+                </h2>
+              </div>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Ask specific questions about coverage, limits, or terms within this document.
               </p>
-              <form onSubmit={handleQuerySubmit} className="space-y-4">
-                <div className="relative">
+              <form onSubmit={handleQuerySubmit} className="space-y-6">
+                <div className="relative group">
                   <Textarea
-                    placeholder="Type your question like: Is ACL surgery covered?"
-                    className="min-h-[120px] text-base pr-12"
+                    placeholder="e.g., What is the annual limit for Plan A?"
+                    className="min-h-[160px] text-lg bg-background/50 border-primary/10 focus:border-primary/30 rounded-2xl p-4 transition-all"
                     value={currentQuery}
                     onChange={(e) => setCurrentQuery(e.target.value)}
                     aria-label="Your question"
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2"
-                    onClick={handleVoiceInput}
-                    aria-label={isListening ? 'Stop listening' : 'Start voice input'}
-                  >
-                    {isListening ? (
-                      <MicOff className="text-red-500" />
-                    ) : (
-                      <Mic className="text-primary" />
-                    )}
-                  </Button>
+                  <div className="absolute right-4 bottom-4 flex items-center gap-2">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className={`rounded-full transition-all ${isListening ? 'bg-red-500/10 text-red-500 scale-110' : 'text-primary'}`}
+                        onClick={handleVoiceInput}
+                        aria-label={isListening ? 'Stop listening' : 'Start voice input'}
+                    >
+                        {isListening ? (
+                        <MicOff className="h-5 w-5" />
+                        ) : (
+                        <Mic className="h-5 w-5" />
+                        )}
+                    </Button>
+                  </div>
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                  size="lg"
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-2xl shadow-xl shadow-primary/20 transition-all hover:translate-y-[-2px] active:translate-y-[0px]"
                   disabled={isGenerating || !currentQuery.trim()}
-                  aria-label="Get Answer"
+                  aria-label="Generate Analysis"
                 >
                   {isGenerating ? (
                     <LoaderCircle className="animate-spin mr-2" />
                   ) : (
-                    <Send className="mr-2" />
+                    <Send className="mr-2 h-5 w-5" />
                   )}
-                  Get Answer
+                  {isGenerating ? 'Analyzing...' : 'Generate Analysis'}
                 </Button>
               </form>
             </CardContent>
           </Card>
+          
           <SuggestedQueries
             queries={suggestedQueriesList}
             onQueryClick={handleSuggestedQueryClick}
             isLoading={isSuggesting}
           />
         </div>
-        <div className="space-y-6">
+
+        <div className="lg:col-span-8 space-y-8">
           {isGenerating && (
-            <Card>
-              <CardContent className="p-6 flex flex-col items-center justify-center min-h-[300px]">
-                <Sparkles className="h-16 w-16 text-accent animate-pulse" />
-                <p className="mt-4 text-lg font-headline text-muted-foreground">
-                  Suvitta AI is analyzing your document...
-                </p>
-                <p className="text-muted-foreground">This may take a moment.</p>
-              </CardContent>
-            </Card>
-          )}
-          {answer && <ResultCard answer={answer} />}
-          {error && (
-            <Card className="border-destructive">
-              <CardContent className="p-6">
-                <h3 className="font-headline text-lg text-destructive">
-                  An Error Occurred
+            <Card className="glass border-none shadow-2xl rounded-3xl overflow-hidden min-h-[500px] flex items-center justify-center">
+              <CardContent className="p-12 text-center">
+                <div className="relative mb-8">
+                    <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+                    <Sparkles className="h-24 w-24 text-primary relative z-10 animate-float mx-auto" />
+                </div>
+                <h3 className="text-3xl font-headline font-bold text-foreground mb-4">
+                  Suvitta AI Thinking
                 </h3>
-                <p className="text-destructive/80">{error}</p>
+                <div className="flex flex-col items-center gap-3">
+                    <p className="text-xl text-muted-foreground max-w-md">
+                        Searching through document clauses for precisely the information you need.
+                    </p>
+                    <div className="flex gap-1">
+                        <div className="h-2 w-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
+                        <div className="h-2 w-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
+                        <div className="h-2 w-2 bg-primary rounded-full animate-bounce" />
+                    </div>
+                </div>
               </CardContent>
             </Card>
           )}
-          {!isGenerating && !answer && !error && (
-             <Card className="bg-transparent border-none shadow-none">
-              <CardContent className="p-0">
-                 <Image 
-                    src="https://placehold.co/600x400.png"
-                    alt="Financial document analysis illustration"
-                    data-ai-hint="data analysis abstract"
-                    width={600}
-                    height={400}
-                    className="rounded-lg object-cover"
-                    priority
-                    />
+
+          {answer && <ResultCard answer={answer} />}
+
+          {error && (
+            <Card className="border-destructive/30 bg-destructive/5 rounded-3xl overflow-hidden">
+              <CardContent className="p-8 flex items-start gap-4">
+                <div className="p-3 bg-destructive/10 rounded-xl mt-1">
+                    <MicOff className="h-6 w-6 text-destructive" />
+                </div>
+                <div>
+                    <h3 className="font-headline text-xl font-bold text-destructive mb-2">
+                    Analysis Interrupted
+                    </h3>
+                    <p className="text-destructive/80 leading-relaxed">{error}</p>
+                    <Button variant="outline" className="mt-4 border-destructive/20 hover:bg-destructive/10 text-destructive" onClick={() => setError(null)}>Acknowledge</Button>
+                </div>
               </CardContent>
             </Card>
+          )}
+
+          {!isGenerating && !answer && !error && (
+             <div className="relative group">
+                <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-accent/20 rounded-[40px] blur-2xl opacity-50 group-hover:opacity-100 transition duration-1000" />
+                <Card className="relative glass border-none shadow-2xl rounded-[32px] overflow-hidden">
+                    <CardContent className="p-0">
+                        <div className="relative h-[600px] w-full">
+                            <Image 
+                                src="/hero_ui_illustration_1773253838313.png"
+                                alt="Financial document analysis illustration"
+                                fill
+                                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                priority
+                            />
+                            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background to-transparent" />
+                            <div className="absolute bottom-12 left-12 right-12">
+                                <h4 className="text-4xl font-headline font-bold text-foreground mb-4">Ready to Assist</h4>
+                                <p className="text-xl text-muted-foreground max-w-xl">
+                                    Your document is indexed. Type a question on the left or select a suggested query to begin the analysis.
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+             </div>
           )}
         </div>
       </div>
