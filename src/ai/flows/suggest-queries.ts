@@ -41,7 +41,7 @@ const suggestQueriesFlow = ai.defineFlow(
     inputSchema: SuggestQueriesInputSchema,
     outputSchema: SuggestQueriesOutputSchema,
   },
-  async input => {
+  async (input: SuggestQueriesInput) => {
     try {
       const {output} = await prompt(input);
       return output!;

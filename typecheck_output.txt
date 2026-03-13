@@ -1,0 +1,28 @@
+﻿
+> nextn@0.1.0 typecheck
+> tsc --noEmit
+
+src/ai/flows/generate-answer.ts(48,5): error TS2353: Object literal may only specify known properties, and 'media' does not exist in type '{ schema?: ZodObject<{ documentDataUri: ZodString; question: ZodString; }, "strip", ZodTypeAny, { documentDataUri: string; question: string; }, { documentDataUri: string; question: string; }> | undefined; jsonSchema?: JSONSchema7 | undefined; }'.
+src/app/api/hackrx/run/route.ts(84,43): error TS2551: Property 'ntext' does not exist on type 'Result'. Did you mean 'text'?
+src/app/api/hackrx/run/route.ts(84,71): error TS2551: Property 'ntext' does not exist on type 'Result'. Did you mean 'text'?
+src/components/finsolve/result-card.tsx(30,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+src/components/finsolve/upload-section.tsx(4,29): error TS2307: Cannot find module 'react-dropzone' or its corresponding type declarations.
+src/components/ui/alert-dialog.tsx(4,39): error TS2307: Cannot find module '@radix-ui/react-alert-dialog' or its corresponding type declarations.
+src/components/ui/chart.tsx(4,36): error TS2307: Cannot find module 'recharts' or its corresponding type declarations.
+src/components/ui/chart.tsx(188,25): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/ui/chart.tsx(188,31): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/ui/chart.tsx(288,23): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/ui/checkbox.tsx(4,36): error TS2307: Cannot find module '@radix-ui/react-checkbox' or its corresponding type declarations.
+src/components/ui/collapsible.tsx(3,39): error TS2307: Cannot find module '@radix-ui/react-collapsible' or its corresponding type declarations.
+src/components/ui/dialog.tsx(4,34): error TS2307: Cannot find module '@radix-ui/react-dialog' or its corresponding type declarations.
+src/components/ui/label.tsx(4,33): error TS2307: Cannot find module '@radix-ui/react-label' or its corresponding type declarations.
+src/components/ui/menubar.tsx(4,35): error TS2307: Cannot find module '@radix-ui/react-menubar' or its corresponding type declarations.
+src/components/ui/progress.tsx(4,36): error TS2307: Cannot find module '@radix-ui/react-progress' or its corresponding type declarations.
+src/components/ui/radio-group.tsx(4,38): error TS2307: Cannot find module '@radix-ui/react-radio-group' or its corresponding type declarations.
+src/components/ui/scroll-area.tsx(4,38): error TS2307: Cannot find module '@radix-ui/react-scroll-area' or its corresponding type declarations.
+src/components/ui/separator.tsx(4,37): error TS2307: Cannot find module '@radix-ui/react-separator' or its corresponding type declarations.
+src/components/ui/switch.tsx(4,35): error TS2307: Cannot find module '@radix-ui/react-switch' or its corresponding type declarations.
+src/components/ui/tabs.tsx(4,32): error TS2307: Cannot find module '@radix-ui/react-tabs' or its corresponding type declarations.
+src/components/ui/tooltip.tsx(4,35): error TS2307: Cannot find module '@radix-ui/react-tooltip' or its corresponding type declarations.
+src/components/user-nav.tsx(42,25): error TS2339: Property 'name' does not exist on type 'never'.
+src/components/user-nav.tsx(45,25): error TS2339: Property 'email' does not exist on type 'never'.

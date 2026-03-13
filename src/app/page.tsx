@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect, useRef } from 'react';
+import React, { useState, useTransition, useEffect, useRef } from 'react';
 import { readFileAsDataURI } from '@/lib/file-helpers';
 import type { GenerateAnswerOutput } from '@/ai/flows/generate-answer';
 import { generateAnswer } from '@/ai/flows/generate-answer';
@@ -8,7 +8,7 @@ import { suggestQueries } from '@/ai/flows/suggest-queries';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Send, Sparkles, LoaderCircle, Mic, MicOff, File as FileIcon } from 'lucide-react';
+import { Send, Sparkles, LoaderCircle, Mic, MicOff, File as FileIcon, MessageSquareQuote } from 'lucide-react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 
@@ -214,7 +214,7 @@ export default function Home() {
                     placeholder="e.g., What is the annual limit for Plan A?"
                     className="min-h-[160px] text-lg bg-background/50 border-primary/10 focus:border-primary/30 rounded-2xl p-4 transition-all"
                     value={currentQuery}
-                    onChange={(e) => setCurrentQuery(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCurrentQuery(e.target.value)}
                     aria-label="Your question"
                   />
                   <div className="absolute right-4 bottom-4 flex items-center gap-2">

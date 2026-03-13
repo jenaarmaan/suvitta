@@ -76,7 +76,7 @@ const generateAnswerFlow = ai.defineFlow(
     inputSchema: GenerateAnswerInputSchema,
     outputSchema: GenerateAnswerOutputSchema,
   },
-  async (input) => {
+  async (input: GenerateAnswerInput) => {
     
     // Step 1: Generate answer directly from the document.
     const { output } = await generateAnswerFromDocumentPrompt(input);
