@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 
 import {
   Avatar,
@@ -19,7 +20,7 @@ import { LogIn, LogOut, User } from 'lucide-react';
 
 export function UserNav() {
   // In a real app, you'd get user state from a context or hook.
-  const user = null; // or { name: 'Satoshi', email: 's@atoshi.com' }
+  const [user] = useState<{ name: string; email: string } | null>(null);
 
   return (
     <DropdownMenu>
