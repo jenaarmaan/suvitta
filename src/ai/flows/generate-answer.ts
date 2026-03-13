@@ -41,17 +41,14 @@ const generateAnswerFromDocumentPrompt = ai.definePrompt({
   name: 'generateAnswerFromDocumentPrompt',
   // Use a powerful vision-capable model to handle various document types.
   model: 'googleai/gemini-2.0-flash',
-  input: { 
+  input: {
     schema: GenerateAnswerInputSchema,
-    // Note: Genkit automatically handles the data URI in the `media` field.
-    // The '{{documentDataUri}}' handlebar is a placeholder for the media content.
-    media: { url: '{{documentDataUri}}' }
   },
   output: { schema: GenerateAnswerOutputSchema },
   // This single, powerful prompt handles both OCR and Q&A.
   prompt: `You are an AI assistant specialized in analyzing financial documents and answering user questions.
 
-  First, perform a thorough OCR and text extraction on the provided document. The document can be a PDF, DOCX, or an image.
+  First, perform a thorough OCR and text extraction on the provided document: {{media url=documentDataUri}}
   
   Once you have extracted the full text, analyze the entire document content to answer the user's Question. Provide a clear decision, a concise summary, a detailed explanation, and a relevant clause quote from the document text.
 

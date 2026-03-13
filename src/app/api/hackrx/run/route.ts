@@ -81,7 +81,7 @@ export async function POST(req: Request) {
     if (contentType.includes('pdf') || /\.pdf(\?|$)/i.test(docUrl)) {
       try {
         const data = await pdf(buffer as Buffer);
-        text = data && (data.text || data.ntext) ? (data.text || data.ntext) : '';
+        text = data && data.text ? data.text : '';
       } catch (err) {
         console.error('pdf-parse error', err);
         text = buffer.toString('utf-8');
